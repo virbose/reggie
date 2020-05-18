@@ -37,3 +37,5 @@ Once the containers have been set up and started, you should have access to the 
   - This is a future **TODO** but since the focus was to be on the back-end, I decided to forego the frontend tests
 - Error reporting is somewhat limited on the frontend:
   - It says whether an email is invalid or if it exists, but defaults to 'there was an issue' otherwise; this can be improved
+
+# Thank you!
