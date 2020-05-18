@@ -8,9 +8,33 @@ services:
       - POSTGRES_PASSWORD=${POSTGRESQL_PASSWORD}
     ports:
       - ${POSTGRESQL_PORT}:${POSTGRESQL_PORT}
+  rabbit:
+    hostname: rabbit
+    image: rabbitmq:3-management
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+    ports:
+      - ${RABBITMQ_PORT}:${RABBITMQ_PORT}
+      - ${RABBITMQ_MGMT_PORT}:${RABBITMQ_MGMT_PORT}
+  celery:
+    build:
+      context: ./backreg
+      dockerfile: celery.Dockerfile
+    command: celery worker --app=backreg.celery_worker -l debug
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=${POSTGRESQL_PORT}
+      - DB_USER=${POSTGRESQL_DB_USER}
+      - DB_NAME=${POSTGRESQL_DB_USER}
+      - DB_PASS=${POSTGRESQL_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
+      - CELERY_BROKER_URL=amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbit:${RABBITMQ_PORT}
+    depends_on:
+      - rabbit
   django:
     build: ./backreg
-    command: python manage.py runserver 0.0.0.0:${DJANGO_PORT}
+    command: sh -c "python manage.py migrate && python manage.py test && python manage.py runserver 0.0.0.0:${DJANGO_PORT}"
     volumes:
       - ./backreg:/app/django
     environment:
@@ -20,6 +44,7 @@ services:
       - DB_NAME=${POSTGRESQL_DB_USER}
       - DB_PASS=${POSTGRESQL_PASSWORD}
       - SECRET_KEY=${SECRET_KEY}
+      - CELERY_BROKER_URL=amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbit:${RABBITMQ_PORT}
     ports:
       - ${DJANGO_PORT}:${DJANGO_PORT}
     depends_on:
@@ -34,6 +59,15 @@ services:
       - node-modules:/app/frontreg/node_modules
     ports:
       - ${SPA_PORT}:${SPA_PORT}
+  flower:
+    image: mher/flower
+    environment:
+      - CELERY_BROKER_URL=amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbit:${RABBITMQ_PORT}
+      - FLOWER_PORT=${FLOWER_PORT}
+    ports:
+      - ${FLOWER_PORT}:${FLOWER_PORT}
+    depends_on:
+      - rabbit
 
 volumes:
   node-modules:
