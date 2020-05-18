@@ -132,6 +132,4 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-CELERY_BROKER_URL = 'amqp://{user}:{pass}@'
-
-EXTERNAL_API_URL = 'https://us-central1-development-1300.cloudfunctions.net/BETechnicalTest?int_country_code={iso2_code}'
+EXTERNAL_API_URL = os.environ.get('EXTERNAL_API_URL', '')

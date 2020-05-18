@@ -30,6 +30,7 @@ services:
       - DB_PASS=${POSTGRESQL_PASSWORD}
       - SECRET_KEY=${SECRET_KEY}
       - CELERY_BROKER_URL=amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbit:${RABBITMQ_PORT}
+      - EXTERNAL_API_URL=${EXTERNAL_API_URL}
     depends_on:
       - rabbit
   django:
@@ -45,6 +46,7 @@ services:
       - DB_PASS=${POSTGRESQL_PASSWORD}
       - SECRET_KEY=${SECRET_KEY}
       - CELERY_BROKER_URL=amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbit:${RABBITMQ_PORT}
+      - EXTERNAL_API_URL=${EXTERNAL_API_URL}
     ports:
       - ${DJANGO_PORT}:${DJANGO_PORT}
     depends_on:
